@@ -1,0 +1,5 @@
+{
+  "makefile.extensionOutputFolder": "./.vscode",
+  "slither.solcPath": "",
+  "slither.hiddenDetectors": []
+}

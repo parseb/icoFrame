@@ -4,21 +4,21 @@ pragma solidity 0.8.11;
 import {Test, console} from "forge-std/Test.sol";
 import {CashCow} from "../src/CashCow.sol";
 import {CowCash} from "../src/CowCash.sol";
-import {IERC20} from "../src/IERC20.sol";
+import {IERC20} from "../src/interfaces/IERC20.sol";
 
 
 
 contract CounterTest is Test {
 
-// DAI_ADDR = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063" #polygon mainnet
+//// BASE SUSHI V2
+address immutable DEGEN_ADDR = 0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed;
+address immutable V2Factory = 0x71524B4f93c58fcbF659783284E38825f0622859;
+address immutable V2Router = 0x6BDED42c6DA8FBf0d2bA55B2fa120C5e0c8D7891;
+address immutable sweepTo = 0xE7b30A037F5598E4e73702ca66A59Af5CC650Dcd;
 
-address immutable DEGEN_ADDR = 0x4ed4e862860bed51a9570b96d89af5e1b0efefed;
 
+CashCow COW;
 
-// Proposed legislation does not ban any kind of transfers, but asks "obliged entities" to implement procedures in order to "identify [...] risks of money laundering and terrorist financing". These risk assessments need to also include transactions with self-hosted wallets.
-
-// p.23
-// https://www.europarl.europa.eu/meetdocs/2014_2019/plmrep/COMMITTEES/CJ12/AG/2024/03-19/1297044EN.pdf
 
 // # V3Factory = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
 
@@ -67,9 +67,11 @@ address immutable DEGEN_ADDR = 0x4ed4e862860bed51a9570b96d89af5e1b0efefed;
 //     return v2
 
     function setUp() public {
-        // counter = new CashCow();
-        // counter.setNumber(0);
+        COW = new CashCow(DEGEN_ADDR, V2Factory, V2Router, sweepTo);
+
     }
+
+
 
 
 }

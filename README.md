@@ -1,3 +1,11 @@
+
+
+Cash Cow Quest (dealmaking protocol): 0xE886fE6c864c1D5038395e3C4e5697403fEb3D7e <br>
+Value Conduct Coin: 0x9e9f4a1694c433Bd8c4a8f8Ffe70041de782a6D4
+
+________________________________________________
+
+
 # Frames.js Starter Kit
 
 This is a boilerplate repo to get started quickly with `frames.js`

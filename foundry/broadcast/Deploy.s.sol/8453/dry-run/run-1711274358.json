@@ -1,7 +1,7 @@
 {
   "transactions": [
     {
-      "hash": "0xa6a0ab0db5a5e341afa523f3cd0447d76634483eef83b882e29fb9137186f571",
+      "hash": null,
       "transactionType": "CREATE",
       "contractName": "CashCow",
       "contractAddress": "0xE886fE6c864c1D5038395e3C4e5697403fEb3D7e",
@@ -25,7 +25,7 @@
       "isFixedGasLimit": false
     },
     {
-      "hash": "0x7156994ecf49c5ef515cbdbf9f17b75ebe10671ce73cec49211457ee11539bd3",
+      "hash": null,
       "transactionType": "CREATE",
       "contractName": "ValueConduct",
       "contractAddress": "0x9e9f4a1694c433Bd8c4a8f8Ffe70041de782a6D4",
@@ -341,12 +341,9 @@
   ],
   "receipts": [],
   "libraries": [],
-  "pending": [
-    "0xa6a0ab0db5a5e341afa523f3cd0447d76634483eef83b882e29fb9137186f571",
-    "0x7156994ecf49c5ef515cbdbf9f17b75ebe10671ce73cec49211457ee11539bd3"
-  ],
+  "pending": [],
   "returns": {},
-  "timestamp": 1711274431,
+  "timestamp": 1711274358,
   "chain": 8453,
   "commit": "5ed247f"
 }

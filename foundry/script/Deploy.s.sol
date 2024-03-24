@@ -31,8 +31,19 @@ uint256 dealID;
 
         VCC.approve(address(COW), type(uint256).max);
 
+        vm.sleep(3);
         // dealId = CCOW.createDeal(VC.address, howMuchProjectToken, howMuchDAI, 356, 356, "12345678912345678912345678900012",
-        COW.createDeal(address(VCC), 100, 10000, 10, 110, "none...");
+        COW.createDeal(address(VCC), 100, 10000, 10, 110, "none...1");
+        COW.createDeal(address(VCC), 100, 10000, 10, 110, "none...2");
+        COW.createDeal(address(VCC), 100, 10000, 10, 110, "none...3");
+
+
+
+
+        // for (uint i; i < 100; ++i) {
+        // COW.createDeal(address(VCC), 100, 10000, 10, 110, "none...");
+        //     console.log("createdDeal", i);
+        // }
 
 
         console.log( address(COW) ,  "cow --- vcc    ",  address(VCC) );

@@ -1,20 +1,7 @@
-// import { getFrameMetadata } from '@coinbase/onchainkit';
 // import type { Metadata } from 'next';
-// import { NEXT_PUBLIC_URL } from './config';
+import { NEXT_PUBLIC_URL } from './config';
 
-// const frameMetadata: Metadata = getFrameMetadata({
-//   title: "icoFrame",
-//   description: "ICO poc for Value Conduct Coin (VCC) using cashcow.quest protocol",
-//   openGraph: {
-//     title: 'Value Conduct Coin ICO',
-//     description: 'Predictable liquid value vesting deal for Value Conduct Coin',
-//     images: [`${NEXT_PUBLIC_URL}/picture.png`],
-//   },
-//   other: {
-//     ...self,
-//     'of:accepts:xmtp': '2024-02-01',
-//   },
-// });
+
 
 import { CashCowABI, ValueConductABI, CASHCOWADDR, VALUECONDUCTADDR } from "./txdata/contracts/storage-registry";
 import {
@@ -47,6 +34,8 @@ type State = {
   pageIndex: number;
 };
 
+
+
 const initialState: State = { pageIndex: 0 };
 
 const reducer: FrameReducer<State> = (state, action) => {
@@ -64,11 +53,14 @@ export default async function Home({ searchParams }: NextServerPageProps) {
 
   const frameMessage = await getFrameMessage(previousFrame.postBody, {
     hubHttpUrl: DEFAULT_DEBUGGER_HUB_URL,
+    version: '0.0.1'
   });
   const publicClient = createPublicClient({
     chain: base,
     transport: http(),
   });
+
+
 
   const coinData = getContract({
     address: VALUECONDUCTADDR,
@@ -80,15 +72,17 @@ export default async function Home({ searchParams }: NextServerPageProps) {
 
   console.log(userAddr);
 
-  const hasapproved = await coinData.read.allowance([CASHCOWADDR, userAddr]); /// @todo check if user (how tf) has enough approved to switch buttons
+  const hasapproved = userAddr ?  await coinData.read.allowance([CASHCOWADDR, userAddr]) : 0; /// @todo check if user (how tf) has enough approved to switch buttons
 
   if (frameMessage?.transactionId) {
     return (
       <FrameContainer
-        pathname="/examples/transaction"
-        postUrl="/examples/transaction/frames"
+        pathname="/"
+        postUrl="/"
+        
         state={state}
         previousFrame={previousFrame}
+
       >
         <FrameImage aspectRatio="1:1">
           <div tw="bg-purple-800 text-white w-full h-full justify-center items-center flex">
@@ -97,7 +91,7 @@ export default async function Home({ searchParams }: NextServerPageProps) {
         </FrameImage>
         <FrameButton
           action="link"
-          target={`https://optimistic.etherscan.io/tx/${frameMessage.transactionId}`}
+          target={`https://basescan.io/tx/${frameMessage.transactionId}`}
         >
           View on block explorer
         </FrameButton>
@@ -113,8 +107,8 @@ export default async function Home({ searchParams }: NextServerPageProps) {
 
       <Link href={createDebugUrl(url)}>Debug</Link>
       <FrameContainer
-        pathname="/examples/transaction"
-        postUrl="/examples/transaction/frames"
+        pathname="/"
+        postUrl="/txdata"
         state={state}
         previousFrame={previousFrame}
       >

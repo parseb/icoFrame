@@ -1,8 +1,35 @@
+// import { getFrameMetadata } from '@coinbase/onchainkit';
+// import type { Metadata } from 'next';
+// import { NEXT_PUBLIC_URL } from './config';
+
+// const frameMetadata: Metadata = getFrameMetadata({
+//   title: "icoFrame",
+//   description: "ICO poc for Value Conduct Coin (VCC) using cashcow.quest protocol",
+//   openGraph: {
+//     title: 'Value Conduct Coin ICO',
+//     description: 'Predictable liquid value vesting deal for Value Conduct Coin',
+//     images: [`${NEXT_PUBLIC_URL}/picture.png`],
+//   },
+//   other: {
+//     ...self,
+//     'of:accepts:xmtp': '2024-02-01',
+//   },
+// });
+
+import { CashCowABI, ValueConductABI, CASHCOWADDR, VALUECONDUCTADDR } from "./txdata/contracts/storage-registry";
+import {
+  Abi,
+  createPublicClient,
+  encodeFunctionData,
+  getContract,
+  http,
+} from "viem";
+import { base } from "viem/chains";
+
 import {
   FrameButton,
   FrameContainer,
   FrameImage,
-  FrameInput,
   FrameReducer,
   NextServerPageProps,
   getFrameMessage,
@@ -10,22 +37,21 @@ import {
   useFramesReducer,
 } from "frames.js/next/server";
 import Link from "next/link";
-import { DEFAULT_DEBUGGER_HUB_URL, createDebugUrl } from "./debug";
 import { currentURL } from "./utils";
 
+import { DEFAULT_DEBUGGER_HUB_URL, createDebugUrl } from "./debug";
+import { farcasterHubContext, openframes } from "frames.js/middleware";
+import { getAddressesForFid } from "frames.js";
+
 type State = {
-  active: string;
-  total_button_presses: number;
+  pageIndex: number;
 };
 
-const initialState = { active: "1", total_button_presses: 0 };
+const initialState: State = { pageIndex: 0 };
 
 const reducer: FrameReducer<State> = (state, action) => {
   return {
-    total_button_presses: state.total_button_presses + 1,
-    active: action.postBody?.untrustedData.buttonIndex
-      ? String(action.postBody?.untrustedData.buttonIndex)
-      : "1",
+    pageIndex: 0,
   };
 };
 
@@ -34,84 +60,103 @@ export default async function Home({ searchParams }: NextServerPageProps) {
   const url = currentURL("/");
   const previousFrame = getPreviousFrame<State>(searchParams);
 
+  const [state] = useFramesReducer<State>(reducer, initialState, previousFrame);
+
   const frameMessage = await getFrameMessage(previousFrame.postBody, {
     hubHttpUrl: DEFAULT_DEBUGGER_HUB_URL,
   });
+  const publicClient = createPublicClient({
+    chain: base,
+    transport: http(),
+  });
 
-  if (frameMessage && !frameMessage?.isValid) {
-    throw new Error("Invalid frame payload");
-  }
+  const coinData = getContract({
+    address: VALUECONDUCTADDR,
+    abi: ValueConductABI,
+    client: publicClient,
+  });
 
-  const [state, dispatch] = useFramesReducer<State>(
-    reducer,
-    initialState,
-    previousFrame
-  );
+  const userAddr: `0x${string}` = frameMessage?.requesterVerifiedAddresses[0] as `0x${string}`; /// maybe not?
 
-  // Here: do a server side side effect either sync or async (using await), such as minting an NFT if you want.
-  // example: load the users credentials & check they have an NFT
+  console.log(userAddr);
 
-  console.log("info: state is:", state);
+  const hasapproved = await coinData.read.allowance([CASHCOWADDR, userAddr]); /// @todo check if user (how tf) has enough approved to switch buttons
 
-  // then, when done, return next frame
-  return (
-    <div className="p-4">
-      frames.js starter kit. The Template Frame is on this page, it&apos;s in
-      the html meta tags (inspect source).{" "}
-      <Link href={createDebugUrl(url)} className="underline">
-        Debug
-      </Link>{" "}
-      or see{" "}
-      <Link href="/examples" className="underline">
-        other examples
-      </Link>
+  if (frameMessage?.transactionId) {
+    return (
       <FrameContainer
-        postUrl="/frames"
-        pathname="/"
+        pathname="/examples/transaction"
+        postUrl="/examples/transaction/frames"
         state={state}
         previousFrame={previousFrame}
       >
-        {/* <FrameImage src="https://framesjs.org/og.png" /> */}
-        <FrameImage aspectRatio="1.91:1">
-          <div tw="w-full h-full bg-slate-700 text-white justify-center items-center flex flex-col">
-            <div tw="flex flex-row">
-              {frameMessage?.inputText ? frameMessage.inputText : "Hello world"}
-            </div>
-            {frameMessage && (
-              <div tw="flex flex-col">
-                <div tw="flex">
-                  Requester is @{frameMessage.requesterUserData?.username}{" "}
-                </div>
-                <div tw="flex">
-                  Requester follows caster:{" "}
-                  {frameMessage.requesterFollowsCaster ? "true" : "false"}
-                </div>
-                <div tw="flex">
-                  Caster follows requester:{" "}
-                  {frameMessage.casterFollowsRequester ? "true" : "false"}
-                </div>
-                <div tw="flex">
-                  Requester liked cast:{" "}
-                  {frameMessage.likedCast ? "true" : "false"}
-                </div>
-                <div tw="flex">
-                  Requester recasted cast:{" "}
-                  {frameMessage.recastedCast ? "true" : "false"}
-                </div>
-              </div>
-            )}
+        <FrameImage aspectRatio="1:1">
+          <div tw="bg-purple-800 text-white w-full h-full justify-center items-center flex">
+            Transaction submitted! {frameMessage.transactionId}
           </div>
         </FrameImage>
-        <FrameInput text="put some text here" />
-        <FrameButton>
-          {state?.active === "1" ? "Active" : "Inactive"}
+        <FrameButton
+          action="link"
+          target={`https://optimistic.etherscan.io/tx/${frameMessage.transactionId}`}
+        >
+          View on block explorer
         </FrameButton>
-        <FrameButton>
-          {state?.active === "2" ? "Active" : "Inactive"}
+      </FrameContainer>
+    );
+  }
+
+  // then, when done, return next frame
+  return (
+    <div>
+      icoFrame - Value Conduct Coin{" "}
+      
+
+      <Link href={createDebugUrl(url)}>Debug</Link>
+      <FrameContainer
+        pathname="/examples/transaction"
+        postUrl="/examples/transaction/frames"
+        state={state}
+        previousFrame={previousFrame}
+      >
+        <FrameImage aspectRatio="1:1">
+          <div tw="bg-purple-800 display: flex text-white w-full justify-center items-center">
+            <p tw='row'>
+            Buy a deal NFT for Value Conduct Coin.
+            </p> 
+          </div>
+          <div tw="bg-purple-800 display: flex text-white w-full justify-center items-center">
+
+          <p>Deal vests over 100 days, 10 day cliff.</p>
+          </div>
+          <div tw="bg-purple-800 display: flex text-white w-full justify-center items-center">
+
+            <p>Price: 100 DEGEN per VCC. (maybe.. try and see don't remmebr).</p>
+            </div>
+
+            <div tw="bg-purple-800 display: flex text-white w-full justify-center items-center">
+
+<p>First Approve. Then mint</p>
+</div>
+<div tw="bg-purple-800 display: flex text-white w-full justify-center items-center">
+    <b>PAY ATTENTION TO WHAT YOU SIGN </b> <br> ||| </br><p>no promises. bugs guaranteed</p>
+</div>
+
+      <div className="buttons">
+
+        { hasapproved < 100 ?         <FrameButton action="tx" target="/txdata/approve">
+          Approve Cash Cow protocol to spend DEGEN
+        </FrameButton>  :         <FrameButton action="tx" target="/txdata/mint">
+          Mint the deal NFT
+        </FrameButton> }
+      </div>
+
+        </FrameImage>
+
+
+        <FrameButton action="tx" target="/examples/transaction/txdata">
+          Approve Cash Cow protocol to spend DEGEN
         </FrameButton>
-        <FrameButton action="link" target={`https://www.google.com`}>
-          External
-        </FrameButton>
+
       </FrameContainer>
     </div>
   );

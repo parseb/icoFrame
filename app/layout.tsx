@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { NEXT_PUBLIC_URL } from './config';
 
-export const metadata: Metadata = {
-  // without a title, warpcast won't validate your frame
-  title: "frames.js starter",
-  description: "...",
-};
+
+
 
 export default function RootLayout({
   children,
